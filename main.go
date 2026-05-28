@@ -1,13 +1,14 @@
 package main
 
-import "github.com/gofiber/fiber/v3"
+import (
+	"fmt"
+	"log"
+
+	"github.com/kooroshh/fiber-boostrap/bootstrap"
+	"github.com/kooroshh/fiber-boostrap/pkg/env"
+)
 
 func main() {
-	app := fiber.New()
-
-	app.Get("/", func(c fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
-
-	app.Listen(":3000")
+	app := bootstrap.NewApplication()
+	log.Fatal(app.Listen(fmt.Sprintf("%s:%s", env.GetEnv("APP_HOST", "localhost"), env.GetEnv("APP_PORT", "4000"))))
 }
