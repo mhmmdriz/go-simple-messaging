@@ -8,6 +8,7 @@ import (
 	"github.com/kooroshh/fiber-boostrap/pkg/env"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func SetupDatabase() {
@@ -19,9 +20,13 @@ func SetupDatabase() {
 		env.GetEnv("DB_PORT", "5432"),
 		env.GetEnv("DB_NAME", ""),
 	)
+
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	DB.AutoMigrate(&models.User{})
+
+	DB.Logger = logger.Default.LogMode(logger.Info)
 }
