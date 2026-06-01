@@ -26,7 +26,7 @@ func SetupDatabase() {
 		log.Fatal(err)
 	}
 
-	DB.AutoMigrate(&models.User{})
+	DB.AutoMigrate(&models.User{}, &models.UserSession{})
 
 	DB.Logger = logger.Default.LogMode(logger.Info)
 }
