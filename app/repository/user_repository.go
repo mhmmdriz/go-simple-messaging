@@ -32,3 +32,7 @@ func GetUserByUsername(ctx context.Context, username string) (models.User, error
 	err = database.DB.Where("username = ?", username).Last(&resp).Error
 	return resp, err
 }
+
+func DeleteUserSessionByToken(ctx context.Context, token string) error {
+	return database.DB.Exec("DELETE FROM user_sessions WHERE token = ?", token).Error
+}
