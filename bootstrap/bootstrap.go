@@ -6,6 +6,7 @@ import (
 	"github.com/gofiber/fiber/v3/middleware/logger"
 	"github.com/gofiber/fiber/v3/middleware/recover"
 	"github.com/gofiber/template/html/v3"
+	"github.com/kooroshh/fiber-boostrap/app/ws"
 	"github.com/kooroshh/fiber-boostrap/pkg/database"
 	"github.com/kooroshh/fiber-boostrap/pkg/env"
 	"github.com/kooroshh/fiber-boostrap/pkg/router"
@@ -20,6 +21,8 @@ func NewApplication() *fiber.App {
 	app.Use(logger.New())
 	app.Get("/dashboard", monitor.New())
 	router.InstallRouter(app)
+
+	go ws.ServeWSMessaging(app)
 
 	return app
 }
