@@ -1,12 +1,15 @@
 package ws
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/gofiber/contrib/v3/websocket"
 	"github.com/gofiber/fiber/v3"
 	"github.com/kooroshh/fiber-boostrap/app/models"
+	"github.com/kooroshh/fiber-boostrap/app/repository"
 	"github.com/kooroshh/fiber-boostrap/pkg/env"
 )
 
@@ -28,7 +31,12 @@ func ServeWSMessaging(app *fiber.App) {
 				fmt.Printf("error payload: %v", err)
 				break
 			}
-
+			msg.Date = time.Now()
+			err := repository.InsertNewMessage(context.Background(), msg)
+			if err != nil {
+				fmt.Printf("error insert message: %v", err)
+				break
+			}
 			broadcast <- msg
 		}
 	}))
