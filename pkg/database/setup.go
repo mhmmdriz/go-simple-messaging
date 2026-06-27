@@ -6,6 +6,8 @@ import (
 
 	"github.com/kooroshh/fiber-boostrap/app/models"
 	"github.com/kooroshh/fiber-boostrap/pkg/env"
+	"go.mongodb.org/mongo-driver/v2/mongo"
+	"go.mongodb.org/mongo-driver/v2/mongo/options"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -29,4 +31,17 @@ func SetupDatabase() {
 	DB.AutoMigrate(&models.User{}, &models.UserSession{})
 
 	DB.Logger = logger.Default.LogMode(logger.Info)
+}
+
+func SetupMongoDB() {
+	uri := env.GetEnv("MONGODB_URI", "")
+	client, err := mongo.Connect(options.Client().ApplyURI(uri))
+	if err != nil {
+		panic(err)
+	}
+
+	coll := client.Database("messaging_app").Collection("message_history")
+	MongoDB = coll
+
+	log.Println("successfully connected to mongoDB")
 }
