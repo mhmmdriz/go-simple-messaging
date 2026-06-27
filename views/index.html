@@ -235,6 +235,110 @@
       });
     }
 
+    // Function to fetch message history
+    function fetchMessageHistory() {
+      fetch('/message/v1/history', {
+        method: 'GET',
+        headers: {
+          'Authorization': `${sessionStorage.getItem('jwtToken')}` // Include JWT token for authorization
+        }
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok ' + response.statusText);
+        }
+        return response.json();
+      })
+      .then(data => {
+        // Assuming the data format is an array of messages
+        data.data.forEach(message => {
+          addMessageToChat(message.from, message.message); // Function to display messages in chat
+        });
+      })
+      .catch(error => {
+        console.error('There was a problem with the fetch operation:', error);
+      });
+    }
+    
+
+    // Function to set up WebSocket connection
+    function setupWebSocket() {
+      socket = new WebSocket('wss://simple-messaging.madrizk.my.id/message/v1/send'); // Replace with your WebSocket server URL
+      // socket = new WebSocket('ws://localhost:8080/message/v1/send');
+
+      socket.onopen = function(event) {
+        console.log('Connected to WebSocket server.');
+        fetchMessageHistory()
+        pendingMessages.forEach(message => {
+          socket.send(message);
+        });
+        pendingMessages = [];
+      };
+
+      socket.onmessage = function(event) {
+        const message = JSON.parse(event.data);
+        showNotification(message.from, message.message);  
+        addMessageToChat(message.from, message.message);
+      };
+
+      socket.onclose = function(event) {
+        console.log('Disconnected from WebSocket server.');
+      };
+
+      socket.onerror = function(error) {
+        console.error('WebSocket error:', error);
+      };
+    }
+    
+    function showNotification(title, message) {
+      // Only show notifications if the user has granted permission and the page is not visible
+      if (Notification.permission === "granted") {
+        const notification = new Notification(title, {
+          body: message,
+          // icon: 'chat-icon.png'  // You can add a custom icon for the notification
+        });
+    
+        // Optional: Add click event to focus the window when the notification is clicked
+        notification.onclick = function() {
+          window.focus();
+        };
+      }
+    }
+
+    // Function to send a message via WebSocket
+    function sendMessage() {
+      const input = document.getElementById('message-input');
+      const message = input.value;
+
+      if (message.trim() !== '') {
+        const msgObject = {
+          from: sessionStorage.getItem('fullname'),
+          message: message
+        };
+
+        const messageToSend = JSON.stringify(msgObject);
+
+        if (socket.readyState === WebSocket.OPEN) {
+          socket.send(messageToSend);
+        } else {
+          pendingMessages.push(messageToSend);
+        }
+
+        input.value = '';
+      }
+    }
+
+    // Function to add a message to the chat box
+    function addMessageToChat(from, message) {
+      const messagesList = document.getElementById('messages');
+      const newMessage = document.createElement('li');
+      newMessage.textContent = `${from}: ${message}`;
+      messagesList.appendChild(newMessage);
+
+      const chatBox = document.getElementById('chat-box');
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
     // Function to show the dashboard
     function showDashboard() {
       document.getElementById('login-form').style.display = 'none';
